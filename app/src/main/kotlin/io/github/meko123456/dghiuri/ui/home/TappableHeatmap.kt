@@ -1,6 +1,7 @@
 package io.github.meko123456.dghiuri.ui.home
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -17,7 +18,20 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntSize
 import io.github.meko123456.dghiuri.domain.HeatmapGeometry
 import io.github.meko123456.dghiuri.domain.StreakEngine
+import androidx.compose.ui.graphics.Color
 import io.github.meko123456.heatmap.ContributionHeatmap
+import io.github.meko123456.heatmap.GithubGreens
+
+/**
+ * GitHub's light-theme greens, level 1 (lightest) to 4. The library's default [GithubGreens] is
+ * the dark-theme palette, whose level 1 is the darkest shade — inverted on a light surface.
+ */
+private val LightGreens: List<Color> = listOf(
+    Color(0xFF9BE9A8),
+    Color(0xFF40C463),
+    Color(0xFF30A14E),
+    Color(0xFF216E39),
+)
 
 /**
  * [ContributionHeatmap] that reports which day was tapped.
@@ -67,6 +81,11 @@ fun TappableHeatmap(
                 }
             },
     ) {
-        ContributionHeatmap(counts = pinnedCounts, endDay = endDay, weeks = weeks)
+        ContributionHeatmap(
+            counts = pinnedCounts,
+            endDay = endDay,
+            weeks = weeks,
+            levelColors = if (isSystemInDarkTheme()) GithubGreens else LightGreens,
+        )
     }
 }
