@@ -12,3 +12,6 @@ build/
 # Signing
 *.jks
 *.keystore
+
+# Release artefacts built locally
+/*.apk
