@@ -43,6 +43,16 @@ object HeatmapGeometry {
         return if (day > endDay) null else day
     }
 
+    /** Number of days actually drawn in a grid ending at [endDay]: full weeks plus the end week so far. */
+    fun daysShown(endDay: Long, weeks: Int): Int =
+        (endDay - firstDay(endDay, weeks) + 1).toInt()
+
+    /** How many of [writtenDays] fall inside the drawn range of a grid ending at [endDay]. */
+    fun daysWritten(writtenDays: Collection<Long>, endDay: Long, weeks: Int): Int {
+        val first = firstDay(endDay, weeks)
+        return writtenDays.count { it in first..endDay }
+    }
+
     /**
      * How many week columns fit in [widthPx] when every step must be at least [minStepPx] wide.
      * Never less than 1 so the heatmap always has something to draw.

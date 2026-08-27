@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntSize
 import io.github.meko123456.dghiuri.domain.HeatmapGeometry
+import io.github.meko123456.dghiuri.domain.StreakEngine
 import io.github.meko123456.heatmap.ContributionHeatmap
 
 /**
@@ -23,9 +24,12 @@ import io.github.meko123456.heatmap.ContributionHeatmap
  *
  * The library draws on a plain Canvas with no per-cell nodes, so this wrapper measures its own
  * width and maps tap offsets back to epoch days with [HeatmapGeometry], which mirrors the
- * library's layout. Taps on undrawn cells (after [endDay]) are ignored.
+ * library's layout. Taps on undrawn cells (after [endDay]) are ignored. The single semantics
+ * node summarises the picture (how many of the shown days were written); the surrounding card
+ * offers a date picker as the accessible way to open a day.
  *
- * @param counts intensity per day, keyed by [java.time.LocalDate.toEpochDay]
+ * @param counts intensity per day (1..[StreakEngine.MAX_INTENSITY]), keyed by
+ *   [java.time.LocalDate.toEpochDay]; the scale is pinned so the buckets render absolutely
  * @param endDay last day drawn, normally today
  * @param onDayTap called with the epoch day under the finger
  * @param weeks number of week columns to show
@@ -40,10 +44,16 @@ fun TappableHeatmap(
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val currentOnDayTap by rememberUpdatedState(onDayTap)
+    val pinnedCounts = remember(counts, endDay) { StreakEngine.pinIntensityScale(counts, endDay) }
+    val description = remember(counts, endDay, weeks) {
+        val shown = HeatmapGeometry.daysShown(endDay, weeks)
+        val written = HeatmapGeometry.daysWritten(counts.keys, endDay, weeks)
+        "Journaling heatmap: $written of the last ${plural(shown, "day", "days")} written"
+    }
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .semantics { contentDescription = "Journaling heatmap, last $weeks weeks" }
+            .semantics { contentDescription = description }
             .onSizeChanged { size = it }
             .pointerInput(weeks, endDay) {
                 detectTapGestures { offset ->
@@ -57,6 +67,6 @@ fun TappableHeatmap(
                 }
             },
     ) {
-        ContributionHeatmap(counts = counts, endDay = endDay, weeks = weeks)
+        ContributionHeatmap(counts = pinnedCounts, endDay = endDay, weeks = weeks)
     }
 }

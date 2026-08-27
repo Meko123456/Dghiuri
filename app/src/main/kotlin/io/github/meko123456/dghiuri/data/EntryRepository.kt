@@ -9,7 +9,8 @@ class EntryRepository(private val dao: EntryDao) {
 
     fun observe(epochDay: Long): Flow<Entry?> = dao.observe(epochDay)
 
-    fun search(query: String): Flow<List<Entry>> = dao.search(query)
+    /** Entries whose markdown contains [query] literally; LIKE wildcards in the text are escaped. */
+    fun search(query: String): Flow<List<Entry>> = dao.search(escapeLike(query))
 
     /**
      * Saves the day's text. An entry whose markdown is blank and has no mood is deleted rather
@@ -26,5 +27,18 @@ class EntryRepository(private val dao: EntryDao) {
 
     suspend fun delete(epochDay: Long) {
         dao.get(epochDay)?.let { dao.delete(it) }
+    }
+
+    companion object {
+        /**
+         * Escapes [text] for use inside a `LIKE ... ESCAPE '\\'` pattern so that `%`, `_` and the
+         * backslash itself match literally instead of acting as wildcards.
+         */
+        fun escapeLike(text: String): String = buildString(text.length) {
+            for (ch in text) {
+                if (ch == '\\' || ch == '%' || ch == '_') append('\\')
+                append(ch)
+            }
+        }
     }
 }

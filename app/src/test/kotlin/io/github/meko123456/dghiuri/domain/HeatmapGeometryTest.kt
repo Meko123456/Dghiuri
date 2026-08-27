@@ -144,4 +144,22 @@ class HeatmapGeometryTest {
         assertEquals(1, HeatmapGeometry.weeksThatFit(0f, 10f))
         assertEquals(1, HeatmapGeometry.weeksThatFit(100f, 0f))
     }
+
+    @Test
+    fun `daysShown counts full weeks plus the end week so far`() {
+        // Thursday end: 19 full weeks plus Sunday..Thursday of the last one.
+        assertEquals(19 * 7 + 5, HeatmapGeometry.daysShown(endDay, weeks))
+        assertEquals(5, HeatmapGeometry.daysShown(endDay, weeks = 1))
+        val sundayEnd = LocalDate.of(2026, 8, 30).toEpochDay()
+        assertEquals(1, HeatmapGeometry.daysShown(sundayEnd, weeks = 1))
+        assertEquals(7 * 3 + 1, HeatmapGeometry.daysShown(sundayEnd, weeks = 4))
+    }
+
+    @Test
+    fun `daysWritten only counts days inside the drawn range`() {
+        val first = HeatmapGeometry.firstDay(endDay, weeks)
+        val written = setOf(first - 1, first, endDay - 3, endDay, endDay + 1)
+        assertEquals(3, HeatmapGeometry.daysWritten(written, endDay, weeks))
+        assertEquals(0, HeatmapGeometry.daysWritten(emptySet(), endDay, weeks))
+    }
 }

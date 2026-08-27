@@ -3,6 +3,7 @@ package io.github.meko123456.dghiuri.ui.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,19 +18,29 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -38,8 +49,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.meko123456.dghiuri.data.Entry
+import io.github.meko123456.dghiuri.domain.DayClock
 import io.github.meko123456.dghiuri.domain.EntryPreview
 import io.github.meko123456.dghiuri.domain.EntryStats
+import io.github.meko123456.dghiuri.domain.HeatmapGeometry
 import io.github.meko123456.dghiuri.domain.Mood
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -48,6 +61,9 @@ import kotlin.math.roundToInt
 private val dayMonthFormat = DateTimeFormatter.ofPattern("d MMM")
 private val dayMonthYearFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 private val weekdayFormat = DateTimeFormatter.ofPattern("EEE")
+
+/** Smallest step box a heatmap day may occupy; fewer weeks are shown rather than going below it. */
+private val minHeatmapStep = 24.dp
 
 /** "27 Aug" for days in the current year, "27 Aug 2025" otherwise. */
 internal fun formatDayMonth(epochDay: Long, today: Long): String {
@@ -67,37 +83,144 @@ internal fun formatWeekday(epochDay: Long, today: Long): String = when (epochDay
 internal fun plural(count: Int, one: String, many: String): String =
     "$count ${if (count == 1) one else many}"
 
-/** The contribution heatmap in a card, with a caption row underneath. */
+/**
+ * The contribution heatmap in a card.
+ *
+ * The number of week columns is chosen from the available width so each day stays at least
+ * [minHeatmapStep] wide, capped at [maxWeeks]. A tap selects a day and shows it under the grid
+ * with an "Open" button, so a finger landing on the wrong square is recoverable; "Pick a day"
+ * opens a date picker, which is also how screen-reader and keyboard users reach past days.
+ */
 @Composable
 internal fun HeatmapCard(
     counts: Map<Long, Int>,
     today: Long,
-    weeks: Int,
-    onDayTap: (Long) -> Unit,
+    maxWeeks: Int,
+    onOpenDay: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var selectedDay: Long? by rememberSaveable { mutableStateOf(null) }
+    var showDayPicker by rememberSaveable { mutableStateOf(false) }
+
     Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            TappableHeatmap(counts = counts, endDay = today, onDayTap = onDayTap, weeks = weeks)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = "Last $weeks weeks",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+        BoxWithConstraints(modifier = Modifier.padding(16.dp)) {
+            val minStepPx = with(LocalDensity.current) { minHeatmapStep.toPx() }
+            val weeks = remember(constraints.maxWidth, minStepPx, maxWeeks) {
+                HeatmapGeometry.weeksThatFit(constraints.maxWidth.toFloat(), minStepPx).coerceIn(1, maxWeeks)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TappableHeatmap(
+                    counts = counts,
+                    endDay = today,
+                    onDayTap = { selectedDay = it },
+                    weeks = weeks,
                 )
-                Text(
-                    text = "Tap a day to open it",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Last $weeks weeks",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = { showDayPicker = true }) {
+                        Text("Pick a day")
+                    }
+                }
+                val day = selectedDay
+                if (day == null || day > today) {
+                    Text(
+                        text = "Tap a day to select it",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    SelectedDayRow(
+                        day = day,
+                        today = today,
+                        written = day in counts,
+                        onOpen = { onOpenDay(day) },
+                    )
+                }
             }
         }
+    }
+
+    if (showDayPicker) {
+        DayPickerDialog(
+            today = today,
+            onPick = { day ->
+                showDayPicker = false
+                onOpenDay(day)
+            },
+            onDismiss = { showDayPicker = false },
+        )
+    }
+}
+
+/** The day picked in the heatmap, with whether it has an entry and a button to open it. */
+@Composable
+private fun SelectedDayRow(
+    day: Long,
+    today: Long,
+    written: Boolean,
+    onOpen: () -> Unit,
+) {
+    val label = remember(day, today) { "${formatWeekday(day, today)}, ${formatDayMonth(day, today)}" }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "$label · ${if (written) "written" else "not written"}",
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onOpen) {
+            Text("Open")
+        }
+    }
+}
+
+/** Material date picker limited to days up to [today]; confirming opens the chosen day. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DayPickerDialog(
+    today: Long,
+    onPick: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val selectableDates = remember(today) {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                DayClock.epochDayOfUtcMillis(utcTimeMillis) <= today
+        }
+    }
+    val pickerState = rememberDatePickerState(
+        initialSelectedDateMillis = DayClock.utcMillisOfEpochDay(today),
+        selectableDates = selectableDates,
+    )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            val selected = pickerState.selectedDateMillis
+            TextButton(
+                enabled = selected != null,
+                onClick = { selected?.let { onPick(DayClock.epochDayOfUtcMillis(it)) } },
+            ) {
+                Text("Open")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    ) {
+        DatePicker(state = pickerState)
     }
 }
 

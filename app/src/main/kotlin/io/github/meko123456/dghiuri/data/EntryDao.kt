@@ -17,8 +17,12 @@ interface EntryDao {
     @Query("SELECT * FROM entries WHERE epochDay = :epochDay")
     suspend fun get(epochDay: Long): Entry?
 
-    @Query("SELECT * FROM entries WHERE markdown LIKE '%' || :query || '%' ORDER BY epochDay DESC")
-    fun search(query: String): Flow<List<Entry>>
+    /**
+     * Substring match on the raw markdown. [pattern] must already have `%`, `_` and `\\` escaped
+     * with a backslash (see [EntryRepository.escapeLike]) so they match literally.
+     */
+    @Query("SELECT * FROM entries WHERE markdown LIKE '%' || :pattern || '%' ESCAPE '\\' ORDER BY epochDay DESC")
+    fun search(pattern: String): Flow<List<Entry>>
 
     @Upsert
     suspend fun upsert(entry: Entry)

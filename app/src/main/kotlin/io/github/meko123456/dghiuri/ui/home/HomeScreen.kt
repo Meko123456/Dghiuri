@@ -32,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.meko123456.dghiuri.data.Entry
 import io.github.meko123456.dghiuri.dghiuriApp
@@ -71,7 +72,13 @@ private val cardModifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom =
 fun HomeScreen(onOpenDay: (Long) -> Unit) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(context.dghiuriApp.repository))
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // The day can change while the app sits in the background; re-read it on every return.
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refreshToday()
+        onPauseOrDispose { }
+    }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -80,12 +87,15 @@ fun HomeScreen(onOpenDay: (Long) -> Unit) {
         ActivityResultContracts.CreateDocument(EXPORT_MIME_TYPE),
     ) { uri ->
         if (uri != null) {
-            val markdown = viewModel.exportMarkdown()
-            val count = viewModel.uiState.value.entries.size
             scope.launch {
-                val written = withContext(Dispatchers.IO) { writeTextTo(appContext, uri, markdown) }
+                val document = viewModel.exportMarkdown()
+                val written = withContext(Dispatchers.IO) { writeTextTo(appContext, uri, document.markdown) }
                 snackbarHostState.showSnackbar(
-                    if (written) "Exported ${plural(count, "entry", "entries")}" else "Export failed",
+                    if (written) {
+                        "Exported ${plural(document.entryCount, "entry", "entries")}"
+                    } else {
+                        "Export failed"
+                    },
                 )
             }
         }
@@ -206,8 +216,8 @@ private fun HomeList(
             HeatmapCard(
                 counts = state.heatmapCounts,
                 today = today,
-                weeks = HEATMAP_WEEKS,
-                onDayTap = { day -> if (day <= today) onOpenDay(day) },
+                maxWeeks = HEATMAP_WEEKS,
+                onOpenDay = { day -> if (day <= today) onOpenDay(day) },
                 modifier = cardModifier,
             )
         }

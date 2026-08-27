@@ -83,9 +83,16 @@ fun EditorScreen(epochDay: Long, onBack: () -> Unit) {
     val isToday = remember(epochDay) { epochDay == LocalDate.now().toEpochDay() }
 
     // Owned by the screen (not the ViewModel) so cursor and IME composition update
-    // synchronously; the ViewModel only sees the plain text. Re-seeded when the entry loads.
-    var fieldValue by remember(state.loaded) {
+    // synchronously; the ViewModel only sees the plain text. Saved so the caret survives a
+    // configuration change, and re-seeded from the ViewModel only when the stored entry loads
+    // with text the field does not already hold.
+    var fieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(state.text, TextRange(state.text.length)))
+    }
+    LaunchedEffect(state.loaded) {
+        if (state.loaded && fieldValue.text != state.text) {
+            fieldValue = TextFieldValue(state.text, TextRange(state.text.length))
+        }
     }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
