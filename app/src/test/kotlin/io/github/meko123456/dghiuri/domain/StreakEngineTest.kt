@@ -1,8 +1,6 @@
 package io.github.meko123456.dghiuri.domain
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
 import org.junit.Test
 
 class StreakEngineTest {
@@ -79,34 +77,6 @@ class StreakEngineTest {
         assertEquals(0, StreakEngine.wordCount(""))
         assertEquals(0, StreakEngine.wordCount("  \n\n  "))
         assertEquals(5, StreakEngine.wordCount("# Title\n\nsome **bold**  words\n"))
-    }
-
-    @Test
-    fun `pinning adds the maximum intensity on the undrawn day after the end`() {
-        val counts = mapOf(today to 1, today - 1 to 2)
-        val pinned = StreakEngine.pinIntensityScale(counts, endDay = today)
-        assertEquals(mapOf(today to 1, today - 1 to 2, today + 1 to StreakEngine.MAX_INTENSITY), pinned)
-        assertEquals(StreakEngine.MAX_INTENSITY, pinned.values.max())
-    }
-
-    @Test
-    fun `pinning leaves real days untouched and drops days after the end`() {
-        val counts = mapOf(today to 3, today + 2 to 4, today + 1 to 1)
-        val pinned = StreakEngine.pinIntensityScale(counts, endDay = today)
-        assertEquals(3, pinned[today])
-        assertFalse(today + 2 in pinned)
-        assertEquals(StreakEngine.MAX_INTENSITY, pinned[today + 1])
-    }
-
-    @Test
-    fun `pinning an already pinned map returns it as is`() {
-        val counts = mapOf(today to 1, today + 1 to StreakEngine.MAX_INTENSITY)
-        assertSame(counts, StreakEngine.pinIntensityScale(counts, endDay = today))
-    }
-
-    @Test
-    fun `pinning an empty diary still fixes the scale`() {
-        assertEquals(mapOf(today + 1 to StreakEngine.MAX_INTENSITY), StreakEngine.pinIntensityScale(emptyMap(), today))
     }
 
     @Test

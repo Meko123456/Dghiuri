@@ -53,20 +53,6 @@ object StreakEngine {
         else -> MAX_INTENSITY
     }
 
-    /**
-     * Pins the colour scale of [heatmapCounts] output so the buckets render absolutely.
-     *
-     * The heatmap library shades each day relative to the largest value in the map (the busiest
-     * day is always the darkest), which would turn a diary of short entries entirely dark. It
-     * never draws cells after its end day, so adding [MAX_INTENSITY] at `endDay + 1` fixes the
-     * scale at 1..4 without painting anything. Already-present real days are left untouched.
-     */
-    fun pinIntensityScale(counts: Map<Long, Int>, endDay: Long): Map<Long, Int> {
-        val pin = endDay + 1
-        if (counts[pin] == MAX_INTENSITY) return counts
-        return counts.filterKeys { it <= endDay } + (pin to MAX_INTENSITY)
-    }
-
     /** Word count of a markdown body, ignoring blank runs. */
     fun wordCount(markdown: String): Int =
         markdown.split(whitespace).count { it.isNotBlank() }

@@ -27,7 +27,7 @@ private val LightGreens: List<Color> = listOf(
  * The surrounding card offers a date picker as the accessible way to open a day.
  *
  * @param counts intensity per day (1..[StreakEngine.MAX_INTENSITY]), keyed by
- *   [java.time.LocalDate.toEpochDay]; the scale is pinned so the buckets render absolutely
+ *   [java.time.LocalDate.toEpochDay]; `maxCount` fixes the scale so the buckets render absolutely
  * @param endDay last day drawn, normally today
  * @param onDayTap called with the epoch day under the finger
  * @param weeks number of week columns to show
@@ -40,17 +40,17 @@ fun TappableHeatmap(
     modifier: Modifier = Modifier,
     weeks: Int = 26,
 ) {
-    val pinnedCounts = remember(counts, endDay) { StreakEngine.pinIntensityScale(counts, endDay) }
     val description = remember(counts, endDay, weeks) {
         val shown = HeatmapLayout.daysShown(endDay, weeks)
         val written = HeatmapLayout.daysWithin(counts.keys, endDay, weeks)
         "Journaling heatmap: $written of the last ${plural(shown, "day", "days")} written"
     }
     ContributionHeatmap(
-        counts = pinnedCounts,
+        counts = counts,
         endDay = endDay,
         modifier = modifier,
         weeks = weeks,
+        maxCount = StreakEngine.MAX_INTENSITY,
         levelColors = if (isSystemInDarkTheme()) GithubGreens else LightGreens,
         onDayClick = onDayTap,
         contentDescription = description,
