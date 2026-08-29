@@ -55,17 +55,17 @@ Single-module Compose app on the shared toolchain (Gradle 9.3 / AGP 9.1 / Compos
 
 ```
 data/     Room: Entry(epochDay PK, markdown, mood, updatedAt) + DAO + repository
-domain/   pure Kotlin, 81 unit tests — StreakEngine (streaks, heatmap intensity),
-          HeatmapGeometry (tap → day, mirrors the library's Canvas layout), EntryPreview
+domain/   pure Kotlin, 60 unit tests — StreakEngine (streaks, heatmap intensity), EntryPreview
           (title/snippet from parsed blocks), EntryStats, MarkdownExport, DayClock, Mood
 ui/       Compose — Home (heatmap card, stats, today card, recent list, search, export),
           Editor (edit/preview toggle, mood picker, debounced autosave),
           MarkdownText renderer over the markdown-blocks tree
 ```
 
-Pure logic never touches Android: streaks, geometry, previews, export and the day clock are
-plain Kotlin objects tested with JUnit. The heatmap library draws on a single Canvas, so
-`HeatmapGeometry` reproduces its layout math to turn a tap offset back into an epoch day.
+Pure logic never touches Android: streaks, previews, export and the day clock are plain
+Kotlin objects tested with JUnit. Tap-to-day mapping, the absolute colour scale and the
+light palette come from `heatmap` 0.2.0 — the copies this app shipped with in v0.1.0 were
+upstreamed into the library and then deleted here.
 
 ### Library dependency note
 

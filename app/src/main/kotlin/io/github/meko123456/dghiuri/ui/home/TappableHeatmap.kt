@@ -4,22 +4,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import io.github.meko123456.dghiuri.domain.StreakEngine
 import io.github.meko123456.heatmap.ContributionHeatmap
 import io.github.meko123456.heatmap.GithubGreens
+import io.github.meko123456.heatmap.GithubLightGreens
 import io.github.meko123456.heatmap.HeatmapLayout
-
-/**
- * GitHub's light-theme greens, level 1 (lightest) to 4. The library's default [GithubGreens] is
- * the dark-theme palette, whose level 1 is the darkest shade — inverted on a light surface.
- */
-private val LightGreens: List<Color> = listOf(
-    Color(0xFF9BE9A8),
-    Color(0xFF40C463),
-    Color(0xFF30A14E),
-    Color(0xFF216E39),
-)
 
 /**
  * The journaling [ContributionHeatmap]: tap-to-select via the library's `onDayClick`, with a
@@ -51,7 +40,7 @@ fun TappableHeatmap(
         modifier = modifier,
         weeks = weeks,
         maxCount = StreakEngine.MAX_INTENSITY,
-        levelColors = if (isSystemInDarkTheme()) GithubGreens else LightGreens,
+        levelColors = if (isSystemInDarkTheme()) GithubGreens else GithubLightGreens,
         onDayClick = onDayTap,
         contentDescription = description,
     )
