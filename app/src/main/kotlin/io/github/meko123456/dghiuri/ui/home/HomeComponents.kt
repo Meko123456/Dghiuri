@@ -52,7 +52,7 @@ import io.github.meko123456.dghiuri.data.Entry
 import io.github.meko123456.dghiuri.domain.DayClock
 import io.github.meko123456.dghiuri.domain.EntryPreview
 import io.github.meko123456.dghiuri.domain.EntryStats
-import io.github.meko123456.dghiuri.domain.HeatmapGeometry
+import io.github.meko123456.heatmap.HeatmapLayout
 import io.github.meko123456.dghiuri.domain.Mood
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -106,7 +106,7 @@ internal fun HeatmapCard(
         BoxWithConstraints(modifier = Modifier.padding(16.dp)) {
             val minStepPx = with(LocalDensity.current) { minHeatmapStep.toPx() }
             val weeks = remember(constraints.maxWidth, minStepPx, maxWeeks) {
-                HeatmapGeometry.weeksThatFit(constraints.maxWidth.toFloat(), minStepPx).coerceIn(1, maxWeeks)
+                HeatmapLayout.weeksThatFit(constraints.maxWidth.toFloat(), minStepPx).coerceIn(1, maxWeeks)
             }
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 TappableHeatmap(

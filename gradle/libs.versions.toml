@@ -20,7 +20,7 @@ androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-heatmap-compose = { module = "io.github.meko123456:heatmap", version = "0.1.0" }
+heatmap-compose = { module = "io.github.meko123456:heatmap", version = "0.2.0" }
 markdown-blocks = { module = "io.github.meko123456:markdown-blocks", version = "0.1.0" }
 junit = { module = "junit:junit", version.ref = "junit" }
 
