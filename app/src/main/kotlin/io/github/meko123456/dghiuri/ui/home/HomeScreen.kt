@@ -50,6 +50,7 @@ import io.github.meko123456.dghiuri.data.Entry
 import io.github.meko123456.dghiuri.dghiuriApp
 import io.github.meko123456.dghiuri.domain.EntryStats
 import io.github.meko123456.dghiuri.domain.StreakEngine
+import io.github.meko123456.dghiuri.domain.plural
 import io.github.meko123456.dghiuri.ui.theme.DghiuriTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

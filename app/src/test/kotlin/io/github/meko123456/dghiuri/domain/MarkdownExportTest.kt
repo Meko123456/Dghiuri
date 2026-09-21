@@ -26,7 +26,7 @@ class MarkdownExportTest {
         val expected = """
             |# Dghiuri export
             |
-            |_1 entries, 2026-08-27 → 2026-08-27_
+            |_1 entry, 2026-08-27_
             |
             |## 2026-08-27 · 🙂 Good
             |
@@ -34,6 +34,29 @@ class MarkdownExportTest {
             |
         """.trimMargin()
         assertEquals(expected, MarkdownExport.render(entries))
+    }
+
+    @Test
+    fun `the summary line counts in English and does not point a date at itself`() {
+        // Both halves of this were wrong and asserted-as-wrong by the test above until today: a
+        // one-entry export said "1 entries", and its range arrowed from a date to the same date.
+        val oneDay = MarkdownExport.render(listOf(entry(day(2026, 8, 27), "One.")))
+        assertTrue(oneDay.contains("_1 entry, 2026-08-27_"))
+        assertFalse(oneDay.contains("1 entries"))
+        assertFalse(oneDay.contains("→"))
+
+        // Two entries on the *same* day is still a single-date span, and still plural.
+        val sameDay = MarkdownExport.render(
+            listOf(entry(day(2026, 8, 27), "One."), entry(day(2026, 8, 27), "Two.")),
+        )
+        assertTrue(sameDay.contains("_2 entries, 2026-08-27_"))
+        assertFalse(sameDay.contains("→"))
+
+        // A real span keeps the arrow.
+        val span = MarkdownExport.render(
+            listOf(entry(day(2026, 8, 27), "One."), entry(day(2026, 8, 28), "Two.")),
+        )
+        assertTrue(span.contains("_2 entries, 2026-08-27 → 2026-08-28_"))
     }
 
     @Test

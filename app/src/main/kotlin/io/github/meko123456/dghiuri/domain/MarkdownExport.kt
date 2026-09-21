@@ -10,7 +10,7 @@ import java.time.LocalDate
  * ```
  * # Dghiuri export
  *
- * _N entries, YYYY-MM-DD → YYYY-MM-DD_
+ * _N entries, YYYY-MM-DD → YYYY-MM-DD_   (one entry: "_1 entry, YYYY-MM-DD_")
  *
  * ## YYYY-MM-DD · 🙂 Good
  *
@@ -30,7 +30,10 @@ object MarkdownExport {
         if (sorted.isNotEmpty()) {
             val first = dateOf(sorted.first())
             val last = dateOf(sorted.last())
-            sb.append("_${sorted.size} entries, ${first} → ${last}_\n\n")
+            // "1 entries" until now, and "2026-08-27 → 2026-08-27" for a single entry: a range
+            // arrow pointing at the day it started from. Both were pinned by a test.
+            val span = if (first == last) first else "$first → $last"
+            sb.append("_${plural(sorted.size, "entry", "entries")}, ${span}_\n\n")
         }
 
         for (entry in sorted) {

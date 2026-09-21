@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.meko123456.dghiuri.domain.StreakEngine
+import io.github.meko123456.dghiuri.domain.plural
 import io.github.meko123456.heatmap.ContributionHeatmap
 import io.github.meko123456.heatmap.GithubGreens
 import io.github.meko123456.heatmap.GithubLightGreens

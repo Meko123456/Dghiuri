@@ -54,6 +54,7 @@ import io.github.meko123456.dghiuri.domain.EntryPreview
 import io.github.meko123456.dghiuri.domain.EntryStats
 import io.github.meko123456.heatmap.HeatmapLayout
 import io.github.meko123456.dghiuri.domain.Mood
+import io.github.meko123456.dghiuri.domain.plural
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -78,10 +79,6 @@ internal fun formatWeekday(epochDay: Long, today: Long): String = when (epochDay
     today - 1 -> "Yesterday"
     else -> LocalDate.ofEpochDay(epochDay).format(weekdayFormat)
 }
-
-/** "1 entry" / "3 entries" — English-only, like the rest of the UI. */
-internal fun plural(count: Int, one: String, many: String): String =
-    "$count ${if (count == 1) one else many}"
 
 /**
  * The contribution heatmap in a card.
