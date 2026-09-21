@@ -14,14 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          path: Dghiuri
-
-      # Sibling checkout consumed via composite build until markdown-blocks:0.1.0 is on Maven Central.
-      - uses: actions/checkout@v7
-        with:
-          repository: Meko123456/markdown-blocks
-          path: markdown-blocks
 
       - uses: actions/setup-java@v6
         with:
@@ -31,7 +23,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build, lint and unit tests
-        working-directory: Dghiuri
         run: ./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest --stacktrace
 
       - name: Upload lint report
@@ -39,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: lint-report
-          path: Dghiuri/app/build/reports/lint-results-debug.html
+          path: app/build/reports/lint-results-debug.html

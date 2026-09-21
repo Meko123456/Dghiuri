@@ -69,24 +69,22 @@ upstreamed into the library and then deleted here.
 
 ### Library dependency note
 
-`heatmap` is consumed straight from Maven Central. `markdown-blocks` is declared by its
-Maven coordinates too, but until its `v0.1.0` release lands on Central the build
-substitutes a **Gradle composite build** of the sibling checkout (`../markdown-blocks`),
-which CI clones alongside. Removing that substitution is tracked as an issue.
+Both libraries are consumed straight from Maven Central —
+`io.github.meko123456:heatmap:0.2.0` and `io.github.meko123456:markdown-blocks:0.1.0`.
+(Until markdown-blocks was published, the build substituted a Gradle composite build of a
+sibling checkout; that shim and the extra CI clone are gone.)
 
 ## Build & run
 
 ```sh
 git clone https://github.com/Meko123456/Dghiuri.git
-git clone https://github.com/Meko123456/markdown-blocks.git   # sibling, until published
 cd Dghiuri && ./gradlew :app:installDebug
 ```
 
 ## Status
 
-**v0.1.0** — feature-complete for daily use; see the [issues](https://github.com/Meko123456/Dghiuri/issues)
-for what's next (swapping the composite build for the published `markdown-blocks` artifact once
-it lands on Maven Central).
+**v0.1.0** — feature-complete for daily use; both library dependencies now come from Maven
+Central. See the [issues](https://github.com/Meko123456/Dghiuri/issues) for what's next.
 
 ## License
 
