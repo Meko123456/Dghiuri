@@ -40,3 +40,35 @@ jobs:
         with:
           name: lint-report
           path: Dghiuri/app/build/reports/lint-results-debug.html
+
+  # Debug never runs the shrinker, so until now nothing here had ever executed R8 on this app —
+  # a keep-rules mistake would have surfaced the first time somebody built a release by hand,
+  # on a day unrelated to the change that caused it. Verified this job can actually fail: a
+  # malformed rule in proguard-rules.pro stops :app:minifyReleaseWithR8 rather than sailing past.
+  #
+  # lintVitalRelease is the release-blocking subset of lint and is not covered by lintDebug above.
+  # Every other app in the fleet gates on both; this one was the exception.
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: Dghiuri
+
+      # Same sibling checkout the build job needs, for the same reason: markdown-blocks is
+      # consumed as a composite build until 0.1.0 is on Maven Central.
+      - uses: actions/checkout@v7
+        with:
+          repository: Meko123456/markdown-blocks
+          path: markdown-blocks
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Release build (R8 + release-blocking lint)
+        working-directory: Dghiuri
+        run: ./gradlew :app:assembleRelease :app:lintVitalRelease --stacktrace
