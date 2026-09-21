@@ -13,12 +13,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: Dghiuri
 
       # Sibling checkout consumed via composite build until markdown-blocks:0.1.0 is on Maven Central.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: Meko123456/markdown-blocks
           path: markdown-blocks
