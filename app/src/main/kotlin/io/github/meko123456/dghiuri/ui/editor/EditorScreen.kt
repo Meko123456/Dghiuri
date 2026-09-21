@@ -54,6 +54,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.meko123456.dghiuri.dghiuriApp
+import io.github.meko123456.dghiuri.domain.plural
 import io.github.meko123456.dghiuri.ui.markdown.MarkdownText
 import io.github.meko123456.markdown.Markdown
 import java.time.LocalDate
@@ -193,7 +194,11 @@ fun EditorScreen(epochDay: Long, onBack: () -> Unit) {
                             .fillMaxWidth(),
                     )
                 }
-                EditorFooter(wordCount = state.wordCount, dirty = state.dirty)
+                EditorFooter(
+                    wordCount = state.wordCount,
+                    dirty = state.dirty,
+                    exists = state.exists,
+                )
             } else {
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -287,10 +292,25 @@ private fun PreviewPane(text: String, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * "12 words · saved" — and the three states are genuinely three.
+ *
+ * This used to be `if (dirty) "saving…" else "saved"`, which told a brand-new day it was saved
+ * the moment the editor opened: nothing typed, no row in the database, and the footer claiming
+ * otherwise. [exists] is already tracked exactly — `EntryRepository.save` deletes the row when
+ * the text is blank and no mood is set — so the honest third state was there to be read. It
+ * also covers clearing an entry back down to nothing, which genuinely does remove the row.
+ */
+internal fun saveStatus(dirty: Boolean, exists: Boolean): String = when {
+    dirty -> "saving…"
+    exists -> "saved"
+    else -> "nothing to save"
+}
+
 @Composable
-private fun EditorFooter(wordCount: Int, dirty: Boolean) {
-    val words = if (wordCount == 1) "1 word" else "$wordCount words"
-    val status = if (dirty) "saving…" else "saved"
+private fun EditorFooter(wordCount: Int, dirty: Boolean, exists: Boolean) {
+    val words = plural(wordCount, "word", "words")
+    val status = saveStatus(dirty = dirty, exists = exists)
     Text(
         text = "$words · $status",
         style = MaterialTheme.typography.labelSmall,
