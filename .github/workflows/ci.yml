@@ -82,6 +82,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          path: Dghiuri
+
+      # The same sibling checkout the other jobs make: markdown-blocks is consumed as a composite
+      # build until 0.1.0 is on Maven Central. Without it the release does not resolve.
+      - uses: actions/checkout@v7
+        with:
+          repository: Meko123456/markdown-blocks
+          path: markdown-blocks
 
       - uses: actions/setup-java@v6
         with:
@@ -93,6 +102,7 @@ jobs:
       # CI has no release key, so the build comes out unsigned. Any key will do for installing it
       # on a throwaway emulator, so this makes one up.
       - name: Build the minified release and sign it with a throwaway key
+        working-directory: Dghiuri
         run: |
           ./gradlew :app:assembleRelease --stacktrace
           keytool -genkeypair -keystore "$RUNNER_TEMP/launch.jks" -storepass launchcheck \
@@ -121,4 +131,4 @@ jobs:
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash .github/scripts/launch-release.sh ${{ runner.temp }}/release.apk
+          script: bash Dghiuri/.github/scripts/launch-release.sh ${{ runner.temp }}/release.apk
