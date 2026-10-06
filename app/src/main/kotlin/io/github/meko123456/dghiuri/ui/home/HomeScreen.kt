@@ -175,11 +175,15 @@ internal fun HomeContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text("Write today") },
-                icon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                onClick = { onOpenDay(state.today) },
-            )
+            // Not while the diary is empty: the empty state already says "Write today" under its
+            // own message, and on a phone-sized screen the button sat on top of that message.
+            if (!state.loading && state.entries.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    text = { Text("Write today") },
+                    icon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                    onClick = { onOpenDay(state.today) },
+                )
+            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier
