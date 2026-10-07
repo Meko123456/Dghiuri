@@ -244,7 +244,7 @@ internal fun StatsCard(stats: EntryStats, modifier: Modifier = Modifier) {
                 )
                 StatTile(
                     value = stats.total.toString(),
-                    label = "entries",
+                    label = if (stats.total == 1) "entry" else "entries",
                     description = "${plural(stats.total, "entry", "entries")} in total",
                     modifier = Modifier.weight(1f),
                 )
