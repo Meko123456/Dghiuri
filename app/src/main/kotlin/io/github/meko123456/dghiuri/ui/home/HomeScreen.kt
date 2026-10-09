@@ -180,7 +180,8 @@ internal fun HomeContent(
             if (!state.loading && state.entries.isNotEmpty()) {
                 ExtendedFloatingActionButton(
                     text = { Text("Write today") },
-                    icon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                    // This FAB hides its text from accessibility services, so the icon carries the label.
+                    icon = { Icon(Icons.Default.Edit, contentDescription = "Write today") },
                     onClick = { onOpenDay(state.today) },
                 )
             }
