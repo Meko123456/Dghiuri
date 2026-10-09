@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -57,28 +58,34 @@ import io.github.meko123456.dghiuri.domain.Mood
 import io.github.meko123456.dghiuri.domain.plural
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.roundToInt
-
-private val dayMonthFormat = DateTimeFormatter.ofPattern("d MMM")
-private val dayMonthYearFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
-private val weekdayFormat = DateTimeFormatter.ofPattern("EEE")
 
 /** Smallest step box a heatmap day may occupy; fewer weeks are shown rather than going below it. */
 private val minHeatmapStep = 24.dp
 
+/*
+ * Dates are formatted in the app's language as it is now, which the callers read from the
+ * configuration: formatters kept in top-level vals held the language the process started in, so
+ * switching the app to Arabic left English months. The result is isolated (FSI...PDI), because the
+ * English interface is laid out left to right and an Arabic date inside it read in the wrong order.
+ */
+
 /** "27 Aug" for days in the current year, "27 Aug 2025" otherwise. */
-internal fun formatDayMonth(epochDay: Long, today: Long): String {
+internal fun formatDayMonth(epochDay: Long, today: Long, locale: Locale): String {
     val date = LocalDate.ofEpochDay(epochDay)
     val sameYear = date.year == LocalDate.ofEpochDay(today).year
-    return date.format(if (sameYear) dayMonthFormat else dayMonthYearFormat)
+    return isolated(date.format(DateTimeFormatter.ofPattern(if (sameYear) "d MMM" else "d MMM yyyy", locale)))
 }
 
 /** "Today", "Yesterday", or the short weekday name ("Thu"). */
-internal fun formatWeekday(epochDay: Long, today: Long): String = when (epochDay) {
+internal fun formatWeekday(epochDay: Long, today: Long, locale: Locale): String = when (epochDay) {
     today -> "Today"
     today - 1 -> "Yesterday"
-    else -> LocalDate.ofEpochDay(epochDay).format(weekdayFormat)
+    else -> isolated(LocalDate.ofEpochDay(epochDay).format(DateTimeFormatter.ofPattern("EEE", locale)))
 }
+
+private fun isolated(text: String) = "\u2068$text\u2069"
 
 /**
  * The contribution heatmap in a card.
@@ -165,7 +172,8 @@ private fun SelectedDayRow(
     written: Boolean,
     onOpen: () -> Unit,
 ) {
-    val label = remember(day, today) { "${formatWeekday(day, today)}, ${formatDayMonth(day, today)}" }
+    val locale = LocalConfiguration.current.locales[0]
+    val label = remember(day, today, locale) { "${formatWeekday(day, today, locale)}, ${formatDayMonth(day, today, locale)}" }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -382,8 +390,9 @@ internal fun EntryRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val dayMonth = remember(entry.epochDay, today) { formatDayMonth(entry.epochDay, today) }
-    val weekday = remember(entry.epochDay, today) { formatWeekday(entry.epochDay, today) }
+    val locale = LocalConfiguration.current.locales[0]
+    val dayMonth = remember(entry.epochDay, today, locale) { formatDayMonth(entry.epochDay, today, locale) }
+    val weekday = remember(entry.epochDay, today, locale) { formatWeekday(entry.epochDay, today, locale) }
     val title = remember(entry.markdown) { EntryPreview.title(entry.markdown) }
     val snippet = remember(entry.markdown) { EntryPreview.snippet(entry.markdown) }
 
