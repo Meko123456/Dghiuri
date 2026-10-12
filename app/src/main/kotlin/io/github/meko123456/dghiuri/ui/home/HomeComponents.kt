@@ -301,11 +301,14 @@ private fun StatTile(
             style = MaterialTheme.typography.titleLarge,
             maxLines = 1,
         )
+        // Two lines, centred: at 2x text a quarter of the card is too narrow for "avg mood", and with
+        // one line it wrapped after "avg" and lost "mood" without an ellipsis.
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
         )
     }
 }
