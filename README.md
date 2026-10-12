@@ -51,7 +51,7 @@ holds up. Dghiuri is that proof.
 
 ## Architecture
 
-Single-module Compose app on the shared toolchain (Gradle 9.3 / AGP 9.1 / Compose BOM 2026.06):
+Single-module Compose app on the shared toolchain (Gradle 9.8 / AGP 9.4 / Compose BOM 2026.09):
 
 ```
 data/     Room: Entry(epochDay PK, markdown, mood, updatedAt) + DAO + repository
