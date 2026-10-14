@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.meko123456.dghiuri.data.Entry
 import io.github.meko123456.dghiuri.domain.DayClock
 import io.github.meko123456.dghiuri.domain.EntryPreview
@@ -296,10 +298,14 @@ private fun StatTile(
         modifier = modifier.clearAndSetSemantics { contentDescription = description },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Shrinks to fit rather than wrapping out of sight: at 2x text a quarter of the card is too
+        // narrow for "🔥 12", which broke after the flame and showed no number at all.
+        val valueStyle = MaterialTheme.typography.titleLarge
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge,
+            style = valueStyle,
             maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = valueStyle.fontSize),
         )
         // Two lines, centred: at 2x text a quarter of the card is too narrow for "avg mood", and with
         // one line it wrapped after "avg" and lost "mood" without an ellipsis.
