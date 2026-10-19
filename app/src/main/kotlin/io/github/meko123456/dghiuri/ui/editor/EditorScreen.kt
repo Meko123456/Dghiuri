@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -309,7 +310,7 @@ internal fun saveStatus(dirty: Boolean, exists: Boolean): String = when {
 
 @Composable
 private fun EditorFooter(wordCount: Int, dirty: Boolean, exists: Boolean) {
-    val words = plural(wordCount, "word", "words")
+    val words = plural(wordCount, "word", "words", LocalConfiguration.current.locales[0])
     val status = saveStatus(dirty = dirty, exists = exists)
     Text(
         text = "$words · $status",

@@ -2,6 +2,7 @@ package io.github.meko123456.dghiuri.domain
 
 import io.github.meko123456.dghiuri.data.Entry
 import java.time.LocalDate
+import java.util.Locale
 
 /**
  * Renders every entry into one markdown document for sharing or backup.
@@ -33,7 +34,8 @@ object MarkdownExport {
             // "1 entries" until now, and "2026-08-27 → 2026-08-27" for a single entry: a range
             // arrow pointing at the day it started from. Both were pinned by a test.
             val span = if (first == last) first else "$first → $last"
-            sb.append("_${plural(sorted.size, "entry", "entries")}, ${span}_\n\n")
+            // Locale.ROOT, like the ISO dates: the export reads the same whatever the phone's language.
+            sb.append("_${plural(sorted.size, "entry", "entries", Locale.ROOT)}, ${span}_\n\n")
         }
 
         for (entry in sorted) {

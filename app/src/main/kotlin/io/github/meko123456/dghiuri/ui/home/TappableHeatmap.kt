@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import io.github.meko123456.dghiuri.domain.StreakEngine
 import io.github.meko123456.dghiuri.domain.plural
 import io.github.meko123456.heatmap.ContributionHeatmap
@@ -30,10 +31,11 @@ fun TappableHeatmap(
     modifier: Modifier = Modifier,
     weeks: Int = 26,
 ) {
-    val description = remember(counts, endDay, weeks) {
+    val locale = LocalConfiguration.current.locales[0]
+    val description = remember(counts, endDay, weeks, locale) {
         val shown = HeatmapLayout.daysShown(endDay, weeks)
         val written = HeatmapLayout.daysWithin(counts.keys, endDay, weeks)
-        "Journaling heatmap: $written of the last ${plural(shown, "day", "days")} written"
+        "Journaling heatmap: $written of the last ${plural(shown, "day", "days", locale)} written"
     }
     ContributionHeatmap(
         counts = counts,

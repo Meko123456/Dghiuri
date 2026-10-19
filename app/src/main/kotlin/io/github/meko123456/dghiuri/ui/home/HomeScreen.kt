@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,6 +73,7 @@ private val cardModifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom =
 @Composable
 fun HomeScreen(onOpenDay: (Long) -> Unit) {
     val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0]
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(context.dghiuriApp.repository))
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -93,7 +95,7 @@ fun HomeScreen(onOpenDay: (Long) -> Unit) {
                 val written = withContext(Dispatchers.IO) { writeTextTo(appContext, uri, document.markdown) }
                 snackbarHostState.showSnackbar(
                     if (written) {
-                        "Exported ${plural(document.entryCount, "entry", "entries")}"
+                        "Exported ${plural(document.entryCount, "entry", "entries", locale)}"
                     } else {
                         "Export failed"
                     },
@@ -264,7 +266,7 @@ private fun SearchResultsList(
                         if (state.searching) {
                             "Searching…"
                         } else {
-                            "${plural(state.results.size, "match", "matches")} for “$query”"
+                            "${plural(state.results.size, "match", "matches", LocalConfiguration.current.locales[0])} for “$query”"
                         },
                     )
                 }

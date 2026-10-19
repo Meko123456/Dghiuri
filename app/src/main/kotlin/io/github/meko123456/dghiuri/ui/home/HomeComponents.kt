@@ -55,6 +55,7 @@ import io.github.meko123456.dghiuri.data.Entry
 import io.github.meko123456.dghiuri.domain.DayClock
 import io.github.meko123456.dghiuri.domain.EntryPreview
 import io.github.meko123456.dghiuri.domain.EntryStats
+import io.github.meko123456.dghiuri.domain.grouped
 import io.github.meko123456.heatmap.HeatmapLayout
 import io.github.meko123456.dghiuri.domain.Mood
 import io.github.meko123456.dghiuri.domain.plural
@@ -234,6 +235,7 @@ private fun DayPickerDialog(
 /** Four stat tiles plus a one-line footer with word count and this month's entries. */
 @Composable
 internal fun StatsCard(stats: EntryStats, modifier: Modifier = Modifier) {
+    val locale = LocalConfiguration.current.locales[0]
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)) {
             Row(
@@ -241,21 +243,21 @@ internal fun StatsCard(stats: EntryStats, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 StatTile(
-                    value = "🔥 ${stats.currentStreak}",
+                    value = "🔥 ${grouped(stats.currentStreak, locale)}",
                     label = "streak",
-                    description = "Current streak ${plural(stats.currentStreak, "day", "days")}",
+                    description = "Current streak ${plural(stats.currentStreak, "day", "days", locale)}",
                     modifier = Modifier.weight(1f),
                 )
                 StatTile(
-                    value = "🏆 ${stats.longestStreak}",
+                    value = "🏆 ${grouped(stats.longestStreak, locale)}",
                     label = "best",
-                    description = "Longest streak ${plural(stats.longestStreak, "day", "days")}",
+                    description = "Longest streak ${plural(stats.longestStreak, "day", "days", locale)}",
                     modifier = Modifier.weight(1f),
                 )
                 StatTile(
-                    value = stats.total.toString(),
+                    value = grouped(stats.total, locale),
                     label = if (stats.total == 1) "entry" else "entries",
-                    description = "${plural(stats.total, "entry", "entries")} in total",
+                    description = "${plural(stats.total, "entry", "entries", locale)} in total",
                     modifier = Modifier.weight(1f),
                 )
                 val averageMood = stats.averageMood?.roundToInt()?.coerceIn(Mood.range)
@@ -271,8 +273,8 @@ internal fun StatsCard(stats: EntryStats, modifier: Modifier = Modifier) {
                 )
             }
             Text(
-                text = "${plural(stats.totalWords, "word", "words")} · " +
-                    "${plural(stats.writtenThisMonth, "entry", "entries")} this month",
+                text = "${plural(stats.totalWords, "word", "words", locale)} · " +
+                    "${plural(stats.writtenThisMonth, "entry", "entries", locale)} this month",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
