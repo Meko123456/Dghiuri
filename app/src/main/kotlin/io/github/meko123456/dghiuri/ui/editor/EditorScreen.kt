@@ -55,6 +55,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.meko123456.dghiuri.dghiuriApp
+import io.github.meko123456.dghiuri.domain.SharedText
 import io.github.meko123456.dghiuri.domain.plural
 import io.github.meko123456.dghiuri.ui.markdown.MarkdownText
 import io.github.meko123456.markdown.Markdown
@@ -74,7 +75,12 @@ private const val PLACEHOLDER = "How was your day? Markdown works: # heading, - 
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(epochDay: Long, onBack: () -> Unit) {
+fun EditorScreen(
+    epochDay: Long,
+    onBack: () -> Unit,
+    append: String? = null,
+    onAppended: () -> Unit = {},
+) {
     val viewModel = editorViewModel(epochDay)
     val state by viewModel.state.collectAsState()
 
@@ -94,6 +100,16 @@ fun EditorScreen(epochDay: Long, onBack: () -> Unit) {
     LaunchedEffect(state.loaded) {
         if (state.loaded && fieldValue.text != state.text) {
             fieldValue = TextFieldValue(state.text, TextRange(state.text.length))
+        }
+    }
+    // Text shared from another app goes after what the day already holds, so it waits for the
+    // stored entry, and the caret ends up below it to write about it.
+    LaunchedEffect(state.loaded, append) {
+        if (state.loaded && append != null) {
+            val text = SharedText.appendTo(state.text, append)
+            fieldValue = TextFieldValue(text, TextRange(text.length))
+            viewModel.onTextChange(text)
+            onAppended()
         }
     }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
