@@ -22,6 +22,9 @@ class MainActivity : ComponentActivity() {
     /** Text shared from another app, until the day's editor has added it to the entry. */
     private var shared by mutableStateOf<Shared?>(null)
 
+    /** The day the Write today shortcut opens, until the editor is on it. */
+    private var shortcutDay by mutableStateOf<Long?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,7 +33,12 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) take(intent)
         setContent {
             DghiuriTheme {
-                DghiuriNav(shared = shared, onSharedAdded = { shared = null })
+                DghiuriNav(
+                    shared = shared,
+                    onSharedAdded = { shared = null },
+                    openDayRequest = shortcutDay,
+                    onDayOpened = { shortcutDay = null },
+                )
             }
         }
     }
@@ -41,6 +49,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun take(intent: Intent?) {
+        // The launcher's Write today shortcut (res/xml/shortcuts.xml).
+        if (intent?.action == ACTION_WRITE_TODAY) {
+            shortcutDay = LocalDate.now().toEpochDay()
+            return
+        }
         if (intent?.action != Intent.ACTION_SEND) return
         val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()?.takeIf { it.isNotBlank() } ?: return
         shared = Shared(
@@ -50,6 +63,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private const val ACTION_WRITE_TODAY = "io.github.meko123456.dghiuri.action.WRITE_TODAY"
+
 /** Shared text as markdown, and the day it was shared on: the entry it goes into. */
 private data class Shared(val markdown: String, val epochDay: Long)
 
@@ -58,11 +73,22 @@ private data class Shared(val markdown: String, val epochDay: Long)
  * Kept in [rememberSaveable] so rotation/process death returns to the same day.
  */
 @Composable
-private fun DghiuriNav(shared: Shared?, onSharedAdded: () -> Unit) {
+private fun DghiuriNav(
+    shared: Shared?,
+    onSharedAdded: () -> Unit,
+    openDayRequest: Long?,
+    onDayOpened: () -> Unit,
+) {
     var openDay: Long? by rememberSaveable { mutableStateOf(null) }
     // Shared text goes into the day it was shared on, whatever was open.
     LaunchedEffect(shared) {
         if (shared != null) openDay = shared.epochDay
+    }
+    LaunchedEffect(openDayRequest) {
+        if (openDayRequest != null) {
+            openDay = openDayRequest
+            onDayOpened()
+        }
     }
     val day = openDay
     if (day == null) {

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Dghiuri</string>
+    <string name="shortcut_write_today_short">Write today</string>
+    <string name="shortcut_write_today_long">Write today\'s entry</string>
 </resources>

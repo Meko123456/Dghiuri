@@ -35,6 +35,9 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
             <!-- Text or a page shared to Dghiuri goes into today's entry. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
